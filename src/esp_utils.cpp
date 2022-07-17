@@ -3,7 +3,6 @@
 unsigned long wiFiRetryPreviousMillis = 0;
 WiFiEventHandler wifiConnectHandler;
 WiFiEventHandler wifiDisconnectHandler;
-Uptime uptime;
 
 void onWifiConnect(const WiFiEventStationModeGotIP& event) {
   Serial.println();
@@ -89,6 +88,13 @@ void printLocalTime() {
   Serial.println(buf);
 }
 
+void printUptime() {
+  int sec = millis() / 1000;
+  int min = sec / 60;
+  int hr = min / 60;
+  Serial.printf_P(PSTR("Uptime: %02d:%02d:%02d\r\n"), hr, min % 60, sec % 60);
+}
+
 int dBmToQuality(int dBm) {
   if (dBm <= -100) return 0;
   else if (dBm >= -50) return 100;
@@ -99,10 +105,4 @@ int qualityTodBm(int quality) {
   if (quality <= 0) return -100;
   else if (quality >= 100) return -50;
   return (quality / 2) - 100;
-}
-
-void calcUptime() {
-  uptime.sec = millis() / 1000;
-  uptime.min = uptime.sec / 60;
-  uptime.hr = uptime.min / 60;
 }

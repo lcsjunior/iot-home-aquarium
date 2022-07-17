@@ -18,18 +18,11 @@ static const char *ntpServer PROGMEM = "pool.ntp.org";
 static const unsigned long wifiConnectInterval = 60000;
 static const unsigned long wiFiRetryInterval = 30000;
 
-struct Uptime {
-  int sec;
-  int min;
-  int hr;
-};
-extern Uptime uptime;
-
 void initWiFi();
 void handleWiFi();
 void printLocalTime();
+void printUptime();
 int dBmToQuality(int dBm);
 int qualityTodBm(int quality);
-void calcUptime();
 
 #endif

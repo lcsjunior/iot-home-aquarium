@@ -49,8 +49,7 @@ void loop() {
   handleWiFi();
   server.handleClient();
   Cron.delay();
-  calcUptime();
-  Serial.printf_P(PSTR("Uptime: %02d:%02d:%02d\r\n"), uptime.hr, uptime.min % 60, uptime.sec % 60);
+  printUptime();
   delay(1000);
 }
 
