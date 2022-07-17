@@ -13,6 +13,10 @@ Config config;
 
 ESP8266WebServer server(80);
 
+void handleRoot();
+void handleFreeHeap();
+void handleNotFound();
+
 void setup() {
   Serial.begin(115200);
 
@@ -32,29 +36,9 @@ void setup() {
 
   initWiFi();
 
-  server.on("/", []() {
-    StaticJsonDocument<512> doc;
-    time_t now = time(nullptr);
-    int8_t rssi = WiFi.RSSI();
-    doc[F("time")] = now;
-    doc[F("ssid")] = ssid;
-    doc[F("rssi")] = rssi;
-    doc[F("wifiQlt")] = dBmToQuality(rssi);
-    doc[F("nextTrg")] = Cron.getNextTrigger();
-    String json((char *)0);
-    serializeJson(doc, json);
-    server.send(200, "application/json", json.c_str(), measureJson(doc));
-  });
-
-  server.on("/free-heap", []() {
-    char buf[16];
-    snprintf_P(buf, sizeof(buf), PSTR("%lu B"), ESP.getFreeHeap());
-    server.send(200, "text/plain", buf);
-  });
-
-  server.onNotFound([]() {
-    server.send(404, "text/plain", notFoundContent);
-  });
+  server.on("/", HTTP_GET, handleRoot);
+  server.on("/free-heap", HTTP_GET, handleFreeHeap);
+  server.onNotFound(handleNotFound);
   server.begin();
 
   Cron.create("0 0 8 * * *", []() {}, false);
@@ -65,5 +49,31 @@ void loop() {
   handleWiFi();
   server.handleClient();
   Cron.delay();
+  calcUptime();
+  Serial.printf_P(PSTR("Uptime: %02d:%02d:%02d\r\n"), uptime.hr, uptime.min % 60, uptime.sec % 60);
   delay(1000);
+}
+
+void handleRoot() {
+  StaticJsonDocument<512> doc;
+  time_t now = time(nullptr);
+  int8_t rssi = WiFi.RSSI();
+  doc[F("time")] = now;
+  doc[F("ssid")] = ssid;
+  doc[F("rssi")] = rssi;
+  doc[F("wifiQlt")] = dBmToQuality(rssi);
+  doc[F("nextTrg")] = Cron.getNextTrigger();
+  String json((char *)0);
+  serializeJson(doc, json);
+  server.send(200, "application/json", json.c_str(), measureJson(doc));
+}
+
+void handleFreeHeap() {
+  char buf[16];
+  snprintf_P(buf, sizeof(buf), PSTR("%lu B"), ESP.getFreeHeap());
+  server.send(200, "text/plain", buf);
+}
+
+void handleNotFound() {
+  server.send(404, "text/plain", notFoundContent);
 }
