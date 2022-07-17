@@ -1,20 +1,6 @@
 #include "esp_utils.h"
 
-const char *notFoundContent PROGMEM = "File Not Found";
-
-const char *ssid = SECRET_SSID;
-const char *pass = SECRET_PASS;
-const char *otaPass = SECRET_OTA_PASS;
-
-const char *hostname PROGMEM = "iot-home-aquarium";
-
-const char *myTZ PROGMEM = "<-03>3";
-const char *ntpServer PROGMEM = "pool.ntp.org";
-
-const unsigned long wifiConnectInterval = 60000;
-const unsigned long wiFiRetryInterval = 30000;
 unsigned long wiFiRetryPreviousMillis = 0;
-
 WiFiEventHandler wifiConnectHandler;
 WiFiEventHandler wifiDisconnectHandler;
 
@@ -22,6 +8,8 @@ void onWifiConnect(const WiFiEventStationModeGotIP& event) {
   Serial.println();
   Serial.print(F("Connected, IP address: "));
   Serial.println(WiFi.localIP());
+  Serial.print(F("Default hostname: "));
+  Serial.println(hostname);
 }
 
 void onWifiDisconnect(const WiFiEventStationModeDisconnected& event) {
@@ -43,10 +31,10 @@ void initWiFi() {
 
   configTzTime(myTZ, ntpServer);
 
-  ArduinoOTA.setHostname(hostname); // mDNS (*.local)
-  ArduinoOTA.setPassword(otaPass);
+  ArduinoOTA.setHostname((const char *)hostname); // mDNS (*.local)
+  ArduinoOTA.setPassword((const char *)otaPass);
   ArduinoOTA.onStart([]() {
-    String type;
+    String type((char *)0);
     if (ArduinoOTA.getCommand() == U_FLASH) {
       type = F("sketch");
     } else { // U_FS
@@ -77,8 +65,6 @@ void initWiFi() {
     }
   });
   ArduinoOTA.begin();
-  Serial.print(F("mDNS hostname: "));
-  Serial.println(ArduinoOTA.getHostname());
 }
 
 void handleWiFi() {
