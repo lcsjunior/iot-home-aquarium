@@ -50,7 +50,7 @@ void setup() {
     char buf[16];
     snprintf_P(buf, sizeof(buf), PSTR("%lu B"), ESP.getFreeHeap());
     server.send(200, "text/plain", buf);
-  }); 
+  });
 
   server.onNotFound([]() {
     server.send(404, "text/plain", notFoundContent);
