@@ -10,12 +10,17 @@
 
 const char *configFilename PROGMEM = "/config.json";
 Config config;
+bool shouldReboot = false;
 
 ESP8266WebServer server(80);
 
+const char *www_user PROGMEM = BASIC_AUTH_USER;
+const char *www_pass PROGMEM = BASIC_AUTH_PASS;
+
 void handleRoot();
-void handleFreeHeap();
 void handleNotFound();
+void handleFreeHeap();
+void handleConfigDetail();
 
 void setup() {
   Serial.begin(115200);
@@ -38,6 +43,7 @@ void setup() {
 
   server.on("/", HTTP_GET, handleRoot);
   server.on("/free-heap", HTTP_GET, handleFreeHeap);
+  server.on("/config", HTTP_GET, handleConfigDetail);
   server.onNotFound(handleNotFound);
   server.begin();
 
@@ -46,6 +52,11 @@ void setup() {
 }
 
 void loop() {
+  if (shouldReboot) {
+    Serial.println(F("Rebooting..."));
+    delay(100);
+    ESP.restart();
+  }
   handleWiFi();
   server.handleClient();
   Cron.delay();
@@ -67,12 +78,32 @@ void handleRoot() {
   server.send(200, "application/json", json.c_str(), measureJson(doc));
 }
 
+void handleNotFound() {
+  server.send(404, "text/plain", FPSTR(notFoundContent));
+}
+
 void handleFreeHeap() {
   char buf[16];
   snprintf_P(buf, sizeof(buf), PSTR("%lu B"), ESP.getFreeHeap());
-  server.send(200, "text/plain", buf);
+  server.send(200, "text/plain", FPSTR(buf));
 }
 
-void handleNotFound() {
-  server.send(404, "text/plain", notFoundContent);
+void handleConfigDetail() {
+  if (!server.authenticate(www_user, www_pass)) {
+    return server.requestAuthentication();
+  }
+  File file = LittleFS.open(configFilename, "r");
+  if (!file) {
+    server.send(400, "text/plain", FPSTR(errorOpenFileContent));
+    return;
+  }
+  StaticJsonDocument<1024> doc;
+  DeserializationError err = deserializeJson(doc, file);
+  if (err) {
+    server.send(400, "text/plain", FPSTR(errorDeserializeFileContent));
+    return;
+  }
+  String json((char *)0);
+  serializeJson(doc, json);
+  server.send(200, "application/json", json.c_str(), measureJson(doc));
 }
