@@ -9,10 +9,10 @@
 #include <sys/time.h>
 #include "secrets.h"
 
-static const char *ssid = SECRET_SSID;
-static const char *pass = SECRET_PASS;
-static const char *otaPass = SECRET_OTA_PASS;
-static const char *hostname PROGMEM = "iot-home-aquarium";
+static const char *ssid PROGMEM = SECRET_SSID;
+static const char *pass PROGMEM = SECRET_PASS;
+static const char *otaPass PROGMEM = SECRET_OTA_PASS;
+static const char *hostname PROGMEM = ENV_HOSTNAME;
 static const char *myTZ PROGMEM = "<-03>3";
 static const char *ntpServer PROGMEM = "pool.ntp.org";
 static const unsigned long wifiConnectInterval = 60000;
