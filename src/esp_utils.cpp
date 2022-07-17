@@ -1,5 +1,7 @@
 #include "esp_utils.h"
 
+const char *notFoundContent PROGMEM = "File Not Found";
+
 const char *ssid = SECRET_SSID;
 const char *pass = SECRET_PASS;
 const char *otaPass = SECRET_OTA_PASS;

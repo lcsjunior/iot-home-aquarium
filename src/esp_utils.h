@@ -9,6 +9,8 @@
 #include <sys/time.h>
 #include "secrets.h"
 
+extern const char *notFoundContent;
+
 void initWiFi();
 void handleWiFi();
 void printLocalTime();

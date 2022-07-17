@@ -34,17 +34,22 @@ void setup() {
   server.on("/", []() {
     StaticJsonDocument<512> doc;
     time_t now = time(nullptr);
-    doc["time"] = now;
-    doc["ssid"] = WiFi.SSID();
-    doc["rssi"] = WiFi.RSSI();
-    doc["wifiQlt"] = dBmToQuality(WiFi.RSSI());
-    doc["nextTrg"] = Cron.getNextTrigger();
-    String json;
+    doc[F("time")] = now;
+    doc[F("ssid")] = WiFi.SSID();
+    doc[F("rssi")] = WiFi.RSSI();
+    doc[F("wifiQlt")] = dBmToQuality(WiFi.RSSI());
+    doc[F("nextTrg")] = Cron.getNextTrigger();
+    String json((char *)0);
     serializeJson(doc, json);
-    server.send(200, "text/json", json.c_str());
+    server.send(200, "application/json", json.c_str(), measureJson(doc));
+  });
+  server.on("/heap", []() {
+    char buf[16];
+    snprintf_P(buf, sizeof(buf), PSTR("%lu B"), ESP.getFreeHeap());
+    server.send(200, "text/plain", buf);
   });
   server.onNotFound([]() {
-    server.send(404, "text/plain", "File Not Found");
+    server.send(404, "text/plain", notFoundContent);
   });
   server.begin();
 
