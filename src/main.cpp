@@ -49,7 +49,6 @@ void loop() {
   handleWiFi();
   server.handleClient();
   Cron.delay();
-  printUptime();
   delay(1000);
 }
 
@@ -57,10 +56,11 @@ void handleRoot() {
   StaticJsonDocument<512> doc;
   time_t now = time(nullptr);
   int8_t rssi = WiFi.RSSI();
-  doc[F("time")] = now;
   doc[F("ssid")] = ssid;
   doc[F("rssi")] = rssi;
   doc[F("wifiQlt")] = dBmToQuality(rssi);
+  doc[F("time")] = now;
+  doc[F("uptime")] = millis();
   doc[F("nextTrg")] = Cron.getNextTrigger();
   String json((char *)0);
   serializeJson(doc, json);

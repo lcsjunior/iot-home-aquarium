@@ -81,7 +81,6 @@ void handleWiFi() {
 void printLocalTime() {
   time_t now = time(nullptr);
   struct tm *timeinfo;
-  time(&now);
   timeinfo = localtime(&now);
   char buf[64];
   strftime(buf, sizeof(buf), "%A, %B %d %Y %H:%M:%S", timeinfo);
