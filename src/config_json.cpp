@@ -45,7 +45,7 @@ void printFile(const char *filename) {
 
 void convertToJson(const Config &src, JsonVariant dst) {
   JsonArray aps = dst.createNestedArray(F("access_points"));
-  for (int i = 0; i < src.accessPoints; i++)
+  for (uint8_t i = 0; i < src.accessPoints; i++)
     aps.add(src.accessPoint[i]);
 }
 
@@ -62,10 +62,10 @@ void convertFromJson(JsonVariantConst src, Config &dst) {
 
 void convertToJson(const ApConfig &src, JsonVariant dst) {
   dst[F("ssid")] = src.ssid;
-  dst[F("passphrase")] = src.passphrase;
+  dst[F("pass")] = src.pass;
 }
 
 void convertFromJson(JsonVariantConst src, ApConfig &dst) {
   strncpy_P(dst.ssid, src[F("ssid")] | "", sizeof(dst.ssid));
-  strncpy_P(dst.passphrase, src[F("passphrase")] | "", sizeof(dst.passphrase));
+  strncpy_P(dst.pass, src[F("pass")] | "", sizeof(dst.pass));
 }

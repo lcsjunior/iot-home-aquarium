@@ -34,7 +34,9 @@ void setup() {
   if (!loaded) {
     Serial.println(F("Using default config"));
     strcpy_P(config.accessPoint[0].ssid, ssid);
-    strcpy_P(config.accessPoint[0].passphrase, pass);
+    char *encodedPass = strdup(pass);
+    XORCipher(encodedPass, cipherKey);
+    strcpy_P(config.accessPoint[0].pass, encodedPass);
     config.accessPoints = 1;
   }
   saveConfigFile(configFilename, config);
@@ -60,6 +62,8 @@ void loop() {
   handleWiFi();
   server.handleClient();
   Cron.delay();
+  printLocalTime();
+  printUptime();
   delay(1000);
 }
 

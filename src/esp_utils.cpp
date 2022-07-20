@@ -94,14 +94,23 @@ void printUptime() {
   Serial.printf_P(PSTR("Uptime: %02d:%02d:%02d\r\n"), hr, min % 60, sec % 60);
 }
 
-int dBmToQuality(int dBm) {
+uint8_t dBmToQuality(int16_t dBm) {
   if (dBm <= -100) return 0;
   else if (dBm >= -50) return 100;
   return 2 * (dBm + 100);
 }
 
-int qualityTodBm(int quality) {
+int16_t qualityTodBm(uint8_t quality) {
   if (quality <= 0) return -100;
   else if (quality >= 100) return -50;
   return (quality / 2) - 100;
+}
+
+char *XORCipher(char* data, const char* key) {
+  uint8_t dataLen = strlen(data);
+  uint8_t keyLen = strlen_P(cipherKey);
+  for (uint8_t i = 0; i < dataLen; ++i) {
+    data[i] = data[i] ^ key[i % keyLen];
+  }
+  return data;
 }
