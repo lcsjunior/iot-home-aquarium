@@ -25,6 +25,6 @@ void printLocalTime();
 void printUptime();
 uint8_t dBmToQuality(int16_t dBm);
 int16_t qualityTodBm(uint8_t quality);
-char *XORCipher(char* data, const char* key);
+char *XORCipher(char* src, char* dest, const char* key);
 
 #endif

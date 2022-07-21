@@ -29,14 +29,18 @@ void setup() {
     Serial.println(F("Failed to mount LittleFS"));
     return;
   }
-  // LittleFS.remove(configFilename);
+  LittleFS.remove(configFilename);
   bool loaded = loadConfigFile(configFilename, config);
   if (!loaded) {
     Serial.println(F("Using default config"));
     strcpy_P(config.accessPoint[0].ssid, ssid);
-    char *encodedPass = strdup(pass);
-    XORCipher(encodedPass, cipherKey);
-    strcpy_P(config.accessPoint[0].pass, encodedPass);
+    char encoded[64] = {0};
+    XORCipher((char *)pass, encoded, cipherKey);
+    Serial.println(encoded);
+    char decoded[64] = {0};
+    XORCipher(encoded, decoded, cipherKey);
+    Serial.println(decoded);
+    strcpy_P(config.accessPoint[0].pass, encoded);
     config.accessPoints = 1;
   }
   saveConfigFile(configFilename, config);

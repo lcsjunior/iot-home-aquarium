@@ -106,11 +106,11 @@ int16_t qualityTodBm(uint8_t quality) {
   return (quality / 2) - 100;
 }
 
-char *XORCipher(char* data, const char* key) {
-  uint8_t dataLen = strlen(data);
+char *XORCipher(char* src, char* dest, const char* key) {
+  uint8_t srcLen = strlen_P(src);
   uint8_t keyLen = strlen_P(cipherKey);
-  for (uint8_t i = 0; i < dataLen; ++i) {
-    data[i] = data[i] ^ key[i % keyLen];
+  for (uint8_t i = 0; i < srcLen; ++i) {
+    dest[i] = src[i] ^ key[i % keyLen];
   }
-  return data;
+  return dest;
 }
