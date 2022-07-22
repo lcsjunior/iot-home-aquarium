@@ -17,6 +17,7 @@ ESP8266WebServer server(80);
 const char *www_user PROGMEM = BASIC_AUTH_USER;
 const char *www_pass PROGMEM = BASIC_AUTH_PASS;
 
+void redirect();
 void handleRoot();
 void handleNotFound();
 void handleFreeHeap();
@@ -45,10 +46,10 @@ void setup() {
 
   initWiFi();
 
-  server.on("/", HTTP_GET, handleRoot);
-  server.on("/free-heap", HTTP_GET, handleFreeHeap);
-  server.on("/config", HTTP_GET, handleConfigDetail);
-  server.on("/config", HTTP_PUT, handleConfigUpdate);
+  server.on(F("/"), HTTP_GET, handleRoot);
+  server.on(F("/free-heap"), HTTP_GET, handleFreeHeap);
+  server.on(F("/config"), HTTP_GET, handleConfigDetail);
+  server.on(F("/config"), HTTP_PUT, handleConfigUpdate);
   server.onNotFound(handleNotFound);
   server.begin();
 
@@ -70,6 +71,11 @@ void loop() {
   delay(1000);
 }
 
+void redirect(const char *url) {
+  server.sendHeader(F("Location"), (char *)url, true);
+  server.send(302, PSTR("text/plain"), "");
+}
+
 void handleRoot() {
   StaticJsonDocument<512> doc;
   time_t now = time(nullptr);
@@ -82,17 +88,17 @@ void handleRoot() {
   doc[F("nextTrg")] = Cron.getNextTrigger();
   String json((char *)0);
   serializeJson(doc, json);
-  server.send(200, "application/json", json.c_str(), measureJson(doc));
+  server.send(200, PSTR("application/json"), json.c_str(), measureJson(doc));
 }
 
 void handleNotFound() {
-  server.send(404, "text/plain", FPSTR(notFoundContent));
+  server.send(404, PSTR("text/plain"), FPSTR(notFoundContent));
 }
 
 void handleFreeHeap() {
   char buf[16];
   snprintf_P(buf, sizeof(buf), PSTR("%lu B"), ESP.getFreeHeap());
-  server.send(200, "text/plain", FPSTR(buf));
+  server.send(200, PSTR("text/plain"), FPSTR(buf));
 }
 
 void handleConfigDetail() {
@@ -101,13 +107,13 @@ void handleConfigDetail() {
   }
   File file = LittleFS.open(configFilename, "r");
   if (!file) {
-    server.send(400, "text/plain", FPSTR(errorOpenFileContent));
+    server.send(400, PSTR("text/plain"), FPSTR(errorOpenFileContent));
     return;
   }
   StaticJsonDocument<1024> doc;
   DeserializationError err = deserializeJson(doc, file);
   if (err) {
-    server.send(400, "text/plain", FPSTR(errorDeserializeFileContent));
+    server.send(400, PSTR("text/plain"), FPSTR(errorDeserializeFileContent));
     return;
   }
   JsonArray aps = doc[F("access_points")];
@@ -116,14 +122,12 @@ void handleConfigDetail() {
   }
   String json((char *)0);
   serializeJson(doc, json);
-  server.send(200, "application/json", json.c_str(), measureJson(doc));
+  server.send(200, PSTR("application/json"), json.c_str(), measureJson(doc));
 }
 
 void handleConfigUpdate() {
   if (!server.authenticate(www_user, www_pass)) {
     return server.requestAuthentication();
   }
-  const char *urlRedirection = "/config";
-  server.sendHeader(F("Location"), urlRedirection, true);
-  server.send(302, "text/plain", "");
+  redirect(PSTR("/config"));
 }
