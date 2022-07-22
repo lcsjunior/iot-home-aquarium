@@ -8,14 +8,13 @@
 #include "esp_utils.h"
 #include "builtinfiles.h"
 
-const char *configFilename PROGMEM = "/config.json";
+const char *configFilename = "/config.json";
 Config config;
 bool shouldReboot = false;
 
 ESP8266WebServer server(80);
-
-const char *www_user PROGMEM = BASIC_AUTH_USER;
-const char *www_pass PROGMEM = BASIC_AUTH_PASS;
+const char *www_user = BASIC_AUTH_USER;
+const char *www_pass = BASIC_AUTH_PASS;
 
 void redirect();
 void handleRoot();
@@ -34,22 +33,22 @@ void setup() {
   bool loaded = loadConfigFile(configFilename, config);
   if (!loaded) {
     Serial.println(F("Using default config"));
-    strcpy_P(config.accessPoint[0].ssid, ssid);
+    strcpy(config.accessPoint[0].ssid, ssid);
     char encoded[32] = {0};
     XORCipher((char *)pass, encoded, cipherKey);
     char hexStr[(strlen(encoded) * 2) + 1] = {0};
     str2hex(encoded, hexStr);
-    strcpy_P(config.accessPoint[0].pass, hexStr);
+    strcpy(config.accessPoint[0].pass, hexStr);
     config.accessPoints = 1;
   }
   saveConfigFile(configFilename, config);
 
   initWiFi();
 
-  server.on(F("/"), HTTP_GET, handleRoot);
-  server.on(F("/free-heap"), HTTP_GET, handleFreeHeap);
-  server.on(F("/config"), HTTP_GET, handleConfigDetail);
-  server.on(F("/config"), HTTP_PUT, handleConfigUpdate);
+  server.on("/", HTTP_GET, handleRoot);
+  server.on("/free-heap", HTTP_GET, handleFreeHeap);
+  server.on("/config", HTTP_GET, handleConfigDetail);
+  server.on("/config", HTTP_PUT, handleConfigUpdate);
   server.onNotFound(handleNotFound);
   server.begin();
 
@@ -72,33 +71,33 @@ void loop() {
 }
 
 void redirect(const char *url) {
-  server.sendHeader(F("Location"), (char *)url, true);
-  server.send(302, PSTR("text/plain"), "");
+  server.sendHeader("Location", (char *)url, true);
+  server.send(302, "text/plain", "");
 }
 
 void handleRoot() {
   StaticJsonDocument<512> doc;
   time_t now = time(nullptr);
   int8_t rssi = WiFi.RSSI();
-  doc[F("ssid")] = ssid;
-  doc[F("rssi")] = rssi;
-  doc[F("wifiQlt")] = dBm2Quality(rssi);
-  doc[F("time")] = now;
-  doc[F("uptime")] = millis();
-  doc[F("nextTrg")] = Cron.getNextTrigger();
+  doc["ssid"] = ssid;
+  doc["rssi"] = rssi;
+  doc["wifiQlt"] = dBm2Quality(rssi);
+  doc["time"] = now;
+  doc["uptime"] = millis();
+  doc["nextTrg"] = Cron.getNextTrigger();
   String json((char *)0);
   serializeJson(doc, json);
-  server.send(200, PSTR("application/json"), json.c_str(), measureJson(doc));
+  server.send(200, "application/json", json.c_str(), measureJson(doc));
 }
 
 void handleNotFound() {
-  server.send(404, PSTR("text/plain"), FPSTR(notFoundContent));
+  server.send(404, "text/plain", FPSTR(notFoundContent));
 }
 
 void handleFreeHeap() {
   char buf[16];
-  snprintf_P(buf, sizeof(buf), PSTR("%lu B"), ESP.getFreeHeap());
-  server.send(200, PSTR("text/plain"), FPSTR(buf));
+  snprintf(buf, sizeof(buf), "%ld B", ESP.getFreeHeap());
+  server.send(200, "text/plain", FPSTR(buf));
 }
 
 void handleConfigDetail() {
@@ -107,27 +106,27 @@ void handleConfigDetail() {
   }
   File file = LittleFS.open(configFilename, "r");
   if (!file) {
-    server.send(400, PSTR("text/plain"), FPSTR(errorOpenFileContent));
+    server.send(400, "text/plain", FPSTR(errorOpenFileContent));
     return;
   }
   StaticJsonDocument<1024> doc;
   DeserializationError err = deserializeJson(doc, file);
   if (err) {
-    server.send(400, PSTR("text/plain"), FPSTR(errorDeserializeFileContent));
+    server.send(400, "text/plain", FPSTR(errorDeserializeFileContent));
     return;
   }
-  JsonArray aps = doc[F("access_points")];
+  JsonArray aps = doc["access_points"];
   for (JsonObject ap : aps) {
-    ap.remove(F("pass"));
+    ap.remove("pass");
   }
   String json((char *)0);
   serializeJson(doc, json);
-  server.send(200, PSTR("application/json"), json.c_str(), measureJson(doc));
+  server.send(200, "application/json", json.c_str(), measureJson(doc));
 }
 
 void handleConfigUpdate() {
   if (!server.authenticate(www_user, www_pass)) {
     return server.requestAuthentication();
   }
-  redirect(PSTR("/config"));
+  redirect("/config");
 }

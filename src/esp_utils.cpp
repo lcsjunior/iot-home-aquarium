@@ -107,8 +107,8 @@ int16_t quality2dBm(uint8_t quality) {
 }
 
 char *XORCipher(char* in, char* out, const char* key) {
-  uint8_t inLen = strlen_P(in);
-  uint8_t keyLen = strlen_P(cipherKey);
+  uint8_t inLen = strlen(in);
+  uint8_t keyLen = strlen(cipherKey);
   for (uint8_t i = 0; i < inLen; ++i) {
     out[i] = in[i] ^ key[i % keyLen];
   }
@@ -119,7 +119,7 @@ void str2hex(char* in, char* out) {
   uint8_t loop = 0;
   uint8_t i = 0;
   while (in[loop] != '\0') {
-    sprintf_P((char*)(out + i), PSTR("%02X"), in[loop]);
+    sprintf((char*)(out + i), "%02X", in[loop]);
     loop += 1;
     i += 2;
   }
@@ -127,7 +127,7 @@ void str2hex(char* in, char* out) {
 }
 
 void hex2str(char* in, char* out, uint8_t outLen) {
-  int inLen = strlen_P(in);
+  int inLen = strlen(in);
   memset(out, '\0', outLen);
   if (inLen % 2 != 0 || inLen / 2 >= outLen)
     return;
