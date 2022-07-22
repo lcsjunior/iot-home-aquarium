@@ -17,8 +17,8 @@ const char *www_user = BASIC_AUTH_USER;
 const char *www_pass = BASIC_AUTH_PASS;
 
 void redirect();
-void handleRoot();
 void handleNotFound();
+void handleRoot();
 void handleFreeHeap();
 void handleConfigDetail();
 void handleConfigUpdate();
@@ -75,6 +75,10 @@ void redirect(const char *url) {
   server.send(302, "text/plain", "");
 }
 
+void handleNotFound() {
+  server.send(404, "text/plain", FPSTR(notFoundContent));
+}
+
 void handleRoot() {
   StaticJsonDocument<512> doc;
   time_t now = time(nullptr);
@@ -88,10 +92,6 @@ void handleRoot() {
   String json((char *)0);
   serializeJson(doc, json);
   server.send(200, "application/json", json.c_str(), measureJson(doc));
-}
-
-void handleNotFound() {
-  server.send(404, "text/plain", FPSTR(notFoundContent));
 }
 
 void handleFreeHeap() {
