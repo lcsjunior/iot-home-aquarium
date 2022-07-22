@@ -94,13 +94,13 @@ void printUptime() {
   Serial.printf_P(PSTR("Uptime: %02d:%02d:%02d\r\n"), hr, min % 60, sec % 60);
 }
 
-uint8_t dBmToQuality(int16_t dBm) {
+uint8_t dBm2Quality(int16_t dBm) {
   if (dBm <= -100) return 0;
   else if (dBm >= -50) return 100;
   return 2 * (dBm + 100);
 }
 
-int16_t qualityTodBm(uint8_t quality) {
+int16_t quality2dBm(uint8_t quality) {
   if (quality <= 0) return -100;
   else if (quality >= 100) return -50;
   return (quality / 2) - 100;

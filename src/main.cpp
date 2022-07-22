@@ -74,7 +74,7 @@ void handleRoot() {
   int8_t rssi = WiFi.RSSI();
   doc[F("ssid")] = ssid;
   doc[F("rssi")] = rssi;
-  doc[F("wifiQlt")] = dBmToQuality(rssi);
+  doc[F("wifiQlt")] = dBm2Quality(rssi);
   doc[F("time")] = now;
   doc[F("uptime")] = millis();
   doc[F("nextTrg")] = Cron.getNextTrigger();
@@ -110,7 +110,7 @@ void handleConfigDetail() {
   }
   JsonArray aps = doc[F("access_points")];
   for (JsonObject ap : aps) {
-    ap.remove("pass");
+    ap.remove(F("pass"));
   }
   String json((char *)0);
   serializeJson(doc, json);
