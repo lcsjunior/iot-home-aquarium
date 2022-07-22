@@ -106,11 +106,34 @@ int16_t qualityTodBm(uint8_t quality) {
   return (quality / 2) - 100;
 }
 
-char *XORCipher(char* src, char* dest, const char* key) {
-  uint8_t srcLen = strlen_P(src);
+char *XORCipher(char* in, char* out, const char* key) {
+  uint8_t inLen = strlen_P(in);
   uint8_t keyLen = strlen_P(cipherKey);
-  for (uint8_t i = 0; i < srcLen; ++i) {
-    dest[i] = src[i] ^ key[i % keyLen];
+  for (uint8_t i = 0; i < inLen; ++i) {
+    out[i] = in[i] ^ key[i % keyLen];
   }
-  return dest;
+  return out;
+}
+
+void str2hex(char* in, char* out) {
+  uint8_t loop = 0;
+  uint8_t i = 0;
+  while (in[loop] != '\0') {
+    sprintf_P((char*)(out + i), PSTR("%02X"), in[loop]);
+    loop += 1;
+    i += 2;
+  }
+  out[i++] = '\0';
+}
+
+void hex2str(char* in, char* out, uint8_t outLen) {
+  int inLen = strlen_P(in);
+  memset(out, '\0', outLen);
+  if (inLen % 2 != 0 || inLen / 2 >= outLen)
+    return;
+  for (uint8_t i = 0; i < inLen; i += 2) {
+    char msb = (in[i+0] <= '9' ? in[i+0] - '0' : (in[i+0] & 0x5F) - 'A' + 10);
+    char lsb = (in[i+1] <= '9' ? in[i+1] - '0' : (in[i+1] & 0x5F) - 'A' + 10);
+    out[i / 2] = (msb << 4) | lsb;
+  }
 }
