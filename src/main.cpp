@@ -21,6 +21,7 @@ void handleRoot();
 void handleNotFound();
 void handleFreeHeap();
 void handleConfigDetail();
+void handleConfigUpdate();
 
 void setup() {
   Serial.begin(115200);
@@ -47,6 +48,7 @@ void setup() {
   server.on("/", HTTP_GET, handleRoot);
   server.on("/free-heap", HTTP_GET, handleFreeHeap);
   server.on("/config", HTTP_GET, handleConfigDetail);
+  server.on("/config", HTTP_PUT, handleConfigUpdate);
   server.onNotFound(handleNotFound);
   server.begin();
 
@@ -115,4 +117,13 @@ void handleConfigDetail() {
   String json((char *)0);
   serializeJson(doc, json);
   server.send(200, "application/json", json.c_str(), measureJson(doc));
+}
+
+void handleConfigUpdate() {
+  if (!server.authenticate(www_user, www_pass)) {
+    return server.requestAuthentication();
+  }
+  const char *urlRedirection = "/config";
+  server.sendHeader(F("Location"), urlRedirection, true);
+  server.send(302, "text/plain", "");
 }
