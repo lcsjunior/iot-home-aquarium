@@ -108,6 +108,10 @@ void handleConfigDetail() {
     server.send(400, "text/plain", FPSTR(errorDeserializeFileContent));
     return;
   }
+  JsonArray aps = doc[F("access_points")];
+  for (JsonObject ap : aps) {
+    ap.remove("pass");
+  }
   String json((char *)0);
   serializeJson(doc, json);
   server.send(200, "application/json", json.c_str(), measureJson(doc));
