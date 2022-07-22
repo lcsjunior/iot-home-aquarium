@@ -19,7 +19,6 @@ const char *www_pass = BASIC_AUTH_PASS;
 void redirect();
 void handleNotFound();
 void handleRoot();
-void handleFreeHeap();
 void handleConfigDetail();
 void handleConfigUpdate();
 
@@ -46,7 +45,6 @@ void setup() {
   initWiFi();
 
   server.on("/", HTTP_GET, handleRoot);
-  server.on("/free-heap", HTTP_GET, handleFreeHeap);
   server.on("/config", HTTP_GET, handleConfigDetail);
   server.on("/config", HTTP_PUT, handleConfigUpdate);
   server.onNotFound(handleNotFound);
@@ -65,8 +63,6 @@ void loop() {
   handleWiFi();
   server.handleClient();
   Cron.delay();
-  printLocalTime();
-  printUptime();
   delay(1000);
 }
 
@@ -92,12 +88,6 @@ void handleRoot() {
   String json((char *)0);
   serializeJson(doc, json);
   server.send(200, "application/json", json.c_str(), measureJson(doc));
-}
-
-void handleFreeHeap() {
-  char buf[16];
-  snprintf(buf, sizeof(buf), "%ld B", ESP.getFreeHeap());
-  server.send(200, "text/plain", FPSTR(buf));
 }
 
 void handleConfigDetail() {
