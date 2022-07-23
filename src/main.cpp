@@ -115,7 +115,7 @@ void handleFSInfo() {
   char buf[64];
   snprintf_P(buf,
               sizeof(buf),
-              PSTR("total: %5u Kb - used: %5u Kb %3.1f%%"),
+              PSTR("total: %5u Kb - used: %5u Kb %6.1f%%"),
               fs_info.totalBytes / 1024,
               fs_info.usedBytes / 1024,
               perc
