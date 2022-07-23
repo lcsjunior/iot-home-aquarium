@@ -135,7 +135,7 @@ void handleConfigDetail() {
   StaticJsonDocument<1024> doc;
   DeserializationError err = deserializeJson(doc, file);
   if (err) {
-    server.send(400, "text/plain", FPSTR(deserializeFileError));
+    server.send(400, "text/plain", FPSTR(deserializeError));
     return;
   }
   JsonArray aps = doc["access_points"];
@@ -151,5 +151,14 @@ void handleConfigUpdate() {
   if (!server.authenticate(www_user, www_pass)) {
     return server.requestAuthentication();
   }
+  StaticJsonDocument<256> doc;
+  DeserializationError err = deserializeJson(doc, server.arg("plain"));
+  if (err) {
+    server.send(400, "text/plain", FPSTR(deserializeError));
+    return;
+  }
+  config.thermostat.setpoint = doc["setpoint"];
+  config.thermostat.hysteresis = doc["hysteresis"];
+  saveConfigFile(configFilename, config);
   redirect("/config");
 }
