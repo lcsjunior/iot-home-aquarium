@@ -11,8 +11,8 @@ class Relay {
 
   public:
     Relay(const byte pin):
-                         _pin(pin)
-                         {};
+                          _pin(pin)
+                          {};
     void setup();
     bool isOn() const;
     bool isOff() const;

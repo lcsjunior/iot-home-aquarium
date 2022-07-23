@@ -8,8 +8,10 @@
 #include "esp_utils.h"
 #include "builtinfiles.h"
 #include "relay.h"
+#include "temp_sensor.h"
 
 Relay lamp(D6);
+DSTempSensor tempSensor(D7);
 
 const char *configFilename = "/config.json";
 Config config;
@@ -33,6 +35,7 @@ void handleLampOff();
 void setup() {
   Serial.begin(115200);
   lamp.setup();
+  tempSensor.setup();
 
   if (!LittleFS.begin()) {
     Serial.println(F("Failed to mount LittleFS"));
@@ -102,15 +105,15 @@ void handleNotFound() {
 
 void handleRoot() {
   StaticJsonDocument<512> doc;
-  time_t now = time(nullptr);
-  int8_t rssi = WiFi.RSSI();
   doc["ssid"] = ssid;
-  doc["rssi"] = rssi;
-  doc["wifiQlt"] = dBm2Quality(rssi);
+  int8_t wifiQlt = dBm2Quality(WiFi.RSSI());
+  doc["wifiQlt"] = wifiQlt;
+  time_t now = time(nullptr);
   doc["time"] = now;
   doc["uptime"] = millis();
   doc["nextTrg"] = Cron.getNextTrigger();
   doc["isLampOn"] = lamp.isOn();
+  doc["cTemp"] = tempSensor.getCTemp();
   String json((char *)0);
   serializeJson(doc, json);
   server.send(200, "application/json", json.c_str(), measureJson(doc));
@@ -184,11 +187,11 @@ void handleConfigUpdate() {
 void handleLampOn() {
   if (!isAuthenticated()) return;
   lamp.turnOn();
-  redirect("/");
+  server.send(200);
 }
 
 void handleLampOff() {
   if (!isAuthenticated()) return;
   lamp.turnOff();
-  redirect("/");
+  server.send(200);
 }
