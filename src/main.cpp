@@ -74,7 +74,7 @@ void redirect(const char *url) {
 }
 
 void handleNotFound() {
-  server.send(404, "text/plain", FPSTR(notFoundContent));
+  server.send(404, "text/plain", FPSTR(notFoundText));
 }
 
 void handleRoot() {
@@ -100,7 +100,7 @@ void handleHeap() {
   char buf[64];
   snprintf_P(buf,
               sizeof(buf),
-              PSTR("free: %7u - max: %7u - frag: %3d%% <- "),
+              PSTR("free: %7u B - max: %7u B - frag: %3d%%"),
               free, max, frag
               );
   server.send(200, "text/plain", FPSTR(buf));
@@ -112,13 +112,13 @@ void handleConfigDetail() {
   }
   File file = LittleFS.open(configFilename, "r");
   if (!file) {
-    server.send(400, "text/plain", FPSTR(errorOpenFileContent));
+    server.send(400, "text/plain", FPSTR(openFileError));
     return;
   }
   StaticJsonDocument<1024> doc;
   DeserializationError err = deserializeJson(doc, file);
   if (err) {
-    server.send(400, "text/plain", FPSTR(errorDeserializeFileContent));
+    server.send(400, "text/plain", FPSTR(deserializeFileError));
     return;
   }
   JsonArray aps = doc["access_points"];
