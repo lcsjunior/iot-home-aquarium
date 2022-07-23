@@ -3,6 +3,6 @@
 
 static const char notFoundText[] PROGMEM = "File not found";
 static const char openFileError[] PROGMEM = "Failed to open config file";
-static const char deserializeError[] PROGMEM = "Failed to deserialize";
+static const char deserializeJSONError[] PROGMEM = "Failed to deserialize JSON";
 
 #endif

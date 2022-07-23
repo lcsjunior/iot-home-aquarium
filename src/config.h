@@ -7,8 +7,8 @@ struct ApConfig {
 };
 
 struct ThermostatConfig {
-  float setpoint = 24;
-  float hysteresis = 0.5;
+  double setpoint = 24;
+  double hysteresis = 0.5;
 };
 
 struct Config {
