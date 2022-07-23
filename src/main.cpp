@@ -20,6 +20,7 @@ void redirect();
 void handleNotFound();
 void handleRoot();
 void handleHeap();
+void handleFSInfo();
 void handleConfigDetail();
 void handleConfigUpdate();
 
@@ -47,6 +48,7 @@ void setup() {
 
   server.on("/", HTTP_GET, handleRoot);
   server.on("/heap", HTTP_GET, handleHeap);
+  server.on("/fsinfo", HTTP_GET, handleFSInfo);
   server.on("/config", HTTP_GET, handleConfigDetail);
   server.on("/config", HTTP_PUT, handleConfigUpdate);
   server.onNotFound(handleNotFound);
@@ -102,6 +104,21 @@ void handleHeap() {
               sizeof(buf),
               PSTR("free: %7u B - max: %7u B - frag: %3d%%"),
               free, max, frag
+              );
+  server.send(200, "text/plain", FPSTR(buf));
+}
+
+void handleFSInfo() {
+  FSInfo fs_info;
+  LittleFS.info(fs_info);
+  float percentage = (float)fs_info.usedBytes / fs_info.totalBytes * 100.0;
+  char buf[64];
+  snprintf_P(buf,
+              sizeof(buf),
+              PSTR("total: %5u Kb - used: %5u Kb %3d%%"),
+              fs_info.totalBytes / 1024,
+              fs_info.usedBytes / 1024,
+              percentage
               );
   server.send(200, "text/plain", FPSTR(buf));
 }
