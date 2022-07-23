@@ -7,6 +7,9 @@
 #include "config_json.h"
 #include "esp_utils.h"
 #include "builtinfiles.h"
+#include "relay.h"
+
+Relay lamp(D6);
 
 const char *configFilename = "/config.json";
 Config config;
@@ -16,6 +19,7 @@ ESP8266WebServer server(80);
 const char *www_user = BASIC_AUTH_USER;
 const char *www_pass = BASIC_AUTH_PASS;
 
+bool isAuthenticated();
 void redirect();
 void handleNotFound();
 void handleRoot();
@@ -23,9 +27,12 @@ void handleHeap();
 void handleFSInfo();
 void handleConfigDetail();
 void handleConfigUpdate();
+void handleLampOn();
+void handleLampOff();
 
 void setup() {
   Serial.begin(115200);
+  lamp.setup();
 
   if (!LittleFS.begin()) {
     Serial.println(F("Failed to mount LittleFS"));
@@ -51,11 +58,17 @@ void setup() {
   server.on("/fsinfo", HTTP_GET, handleFSInfo);
   server.on("/config", HTTP_GET, handleConfigDetail);
   server.on("/config", HTTP_PUT, handleConfigUpdate);
+  server.on("/lamp/on", HTTP_GET, handleLampOn);
+  server.on("/lamp/off", HTTP_GET, handleLampOff);
   server.onNotFound(handleNotFound);
   server.begin();
 
-  Cron.create("0 0 8 * * *", []() {}, false);
-  Cron.create("0 0 16 * * *", []() {}, false);
+  Cron.create("0 0 8 * * *", []() {
+    lamp.turnOn();
+  }, false);
+  Cron.create("0 0 16 * * *", []() {
+    lamp.turnOff();
+  }, false);
 }
 
 void loop() {
@@ -68,6 +81,14 @@ void loop() {
   server.handleClient();
   Cron.delay();
   delay(1000);
+}
+
+bool isAuthenticated() {
+  if (server.authenticate(www_user, www_pass)) {
+    return true;
+  }
+  server.requestAuthentication();
+  return false;
 }
 
 void redirect(const char *url) {
@@ -89,6 +110,7 @@ void handleRoot() {
   doc["time"] = now;
   doc["uptime"] = millis();
   doc["nextTrg"] = Cron.getNextTrigger();
+  doc["isLampOn"] = lamp.isOn();
   String json((char *)0);
   serializeJson(doc, json);
   server.send(200, "application/json", json.c_str(), measureJson(doc));
@@ -124,9 +146,7 @@ void handleFSInfo() {
 }
 
 void handleConfigDetail() {
-  if (!server.authenticate(www_user, www_pass)) {
-    return server.requestAuthentication();
-  }
+  if (!isAuthenticated()) return;
   File file = LittleFS.open(configFilename, "r");
   if (!file) {
     server.send(400, "text/plain", FPSTR(openFileError));
@@ -148,9 +168,7 @@ void handleConfigDetail() {
 }
 
 void handleConfigUpdate() {
-  if (!server.authenticate(www_user, www_pass)) {
-    return server.requestAuthentication();
-  }
+  if (!isAuthenticated()) return;
   StaticJsonDocument<256> doc;
   DeserializationError err = deserializeJson(doc, server.arg("plain"));
   if (err) {
@@ -161,4 +179,16 @@ void handleConfigUpdate() {
   config.thermostat.hysteresis = doc["hysteresis"];
   saveConfigFile(configFilename, config);
   redirect("/config");
+}
+
+void handleLampOn() {
+  if (!isAuthenticated()) return;
+  lamp.turnOn();
+  redirect("/");
+}
+
+void handleLampOff() {
+  if (!isAuthenticated()) return;
+  lamp.turnOff();
+  redirect("/");
 }
