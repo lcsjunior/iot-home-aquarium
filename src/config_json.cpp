@@ -44,12 +44,14 @@ void printFile(const char *filename) {
 }
 
 void convertToJson(const Config &src, JsonVariant dst) {
+  dst["thermostat"] = src.thermostat;
   JsonArray aps = dst.createNestedArray("access_points");
   for (uint8_t i = 0; i < src.accessPoints; i++)
     aps.add(src.accessPoint[i]);
 }
 
 void convertFromJson(JsonVariantConst src, Config &dst) {
+  dst.thermostat = src["thermostat"];
   JsonArrayConst aps = src["access_points"];
   dst.accessPoints = 0;
   for (JsonVariantConst ap : aps) {
@@ -68,4 +70,14 @@ void convertToJson(const ApConfig &src, JsonVariant dst) {
 void convertFromJson(JsonVariantConst src, ApConfig &dst) {
   strncpy(dst.ssid, src["ssid"] | "", sizeof(dst.ssid));
   strncpy(dst.pass, src["pass"] | "", sizeof(dst.pass));
+}
+
+void convertToJson(const ThermostatConfig &src, JsonVariant dst) {
+  dst["setpoint"] = src.setpoint;
+  dst["hysteresis"] = src.hysteresis;
+}
+
+void convertFromJson(JsonVariantConst src, ThermostatConfig &dst) {
+  dst.setpoint = src["setpoint"];
+  dst.hysteresis = src["hysteresis"];
 }

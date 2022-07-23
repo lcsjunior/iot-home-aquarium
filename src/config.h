@@ -6,10 +6,16 @@ struct ApConfig {
   char pass[64];
 };
 
+struct ThermostatConfig {
+  float setpoint = 24;
+  float hysteresis = 0.5;
+};
+
 struct Config {
   static const uint8_t maxAccessPoints = 4;
   ApConfig accessPoint[maxAccessPoints];
   uint8_t accessPoints = 0;
+  ThermostatConfig thermostat;
 };
 
 #endif
