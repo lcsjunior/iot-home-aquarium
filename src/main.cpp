@@ -111,14 +111,14 @@ void handleHeap() {
 void handleFSInfo() {
   FSInfo fs_info;
   LittleFS.info(fs_info);
-  float percentage = (float)fs_info.usedBytes / fs_info.totalBytes * 100.0;
+  float perc = (float)fs_info.usedBytes / fs_info.totalBytes * 100.0;
   char buf[64];
   snprintf_P(buf,
               sizeof(buf),
-              PSTR("total: %5u Kb - used: %5u Kb %3d%%"),
+              PSTR("total: %5u Kb - used: %5u Kb %3.1f%%"),
               fs_info.totalBytes / 1024,
               fs_info.usedBytes / 1024,
-              percentage
+              perc
               );
   server.send(200, "text/plain", FPSTR(buf));
 }
