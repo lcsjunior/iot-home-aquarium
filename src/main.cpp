@@ -36,6 +36,15 @@ void handleConfigUpdate();
 void handleLampOn();
 void handleLampOff();
 
+void configTstat() {
+  tstat.config(
+    config.tstat.setpoint,
+    config.tstat.hysteresis,
+    0,
+    29,
+    300000UL);
+}
+
 void setup() {
   Serial.begin(115200);
   lamp.setup();
@@ -59,12 +68,7 @@ void setup() {
   }
   saveConfigFile(configFilename, config);
 
-  tstat.setup(
-    config.tstat.setpoint,
-    config.tstat.hysteresis,
-    0,
-    29,
-    300000UL);
+  configTstat();
 
   initWiFi();
 
@@ -202,6 +206,7 @@ void handleConfigUpdate() {
   }
   config.tstat.setpoint = doc["setpoint"];
   config.tstat.hysteresis = doc["hysteresis"];
+  configTstat();
   saveConfigFile(configFilename, config);
   redirect("/config");
 }

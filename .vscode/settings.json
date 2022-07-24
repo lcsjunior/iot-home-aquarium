@@ -5,6 +5,8 @@
     "string_view": "cpp",
     "ranges": "cpp",
     "*.tcc": "cpp",
-    "list": "cpp"
+    "list": "cpp",
+    "istream": "cpp",
+    "ostream": "cpp"
   }
 }

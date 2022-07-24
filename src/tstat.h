@@ -24,11 +24,11 @@ class Tstat {
                                             {};
     State getState() const;
     char* getStatus() const;
-    void setup(const float setpoint,
-               const float hysteresis,
-               const float lowerLimit,
-               const float upperLimit,
-               const unsigned long interval = 60000);
+    void config(const float setpoint,
+                const float hysteresis,
+                const float lowerLimit,
+                const float upperLimit,
+                const unsigned long interval = 60000);
     void handleCooler();
     void handleHeater();
 };

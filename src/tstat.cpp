@@ -2,11 +2,11 @@
 
 unsigned long exitIdlePreviousMillis = 0;
 
-void Tstat::setup(const float setpoint,
-                  const float hysteresis,
-                  const float lowerLimit,
-                  const float upperLimit,
-                  const unsigned long interval)
+void Tstat::config(const float setpoint,
+                    const float hysteresis,
+                    const float lowerLimit,
+                    const float upperLimit,
+                    const unsigned long interval)
 {
   _setpoint = setpoint;
   _hysteresis = hysteresis;
