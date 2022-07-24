@@ -22,9 +22,9 @@ Tstat::State Tstat::getState() const {
 char* Tstat::getStatus() const {
   switch (_state) {
     case IDLE:    return (char*)"Idle";
-    case HEATING: return (char*)"Heating";
-    case COOLING: return (char*)"Cooling";
-    default:      return (char*)"[Unknown Status]";
+    case HEATING: return (char*)"H";
+    case COOLING: return (char*)"C";
+    default:      return (char*)"Unk";
   }
 }
 
