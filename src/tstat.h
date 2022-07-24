@@ -7,7 +7,7 @@
 
 class Tstat {
   protected:
-    enum State { IDLE, HEATING, COOLING };
+    enum State { IDLE, COOLING, HEATING };
     State _state = IDLE;
     TempSensor *_tempSensor;
     Relay *_k;

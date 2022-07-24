@@ -4,6 +4,7 @@
 #include <ESP8266WebServer.h>
 #include <CronAlarms.h>
 #include <ArduinoJson.h>
+#include <ThingSpeak.h>
 #include "config_json.h"
 #include "esp_utils.h"
 #include "builtinfiles.h"
@@ -23,6 +24,12 @@ bool shouldReboot = false;
 ESP8266WebServer server(80);
 const char *www_user = BASIC_AUTH_USER;
 const char *www_pass = BASIC_AUTH_PASS;
+
+WiFiClient client;
+const unsigned long myChannelNumber = SECRET_CH_ID;
+const char *myWriteAPIKey = SECRET_WRITE_APIKEY;
+static const unsigned long writeChInterval = 15000;
+unsigned long writeChPreviousMillis = 0;
 
 bool isAuthenticated();
 void redirect();
@@ -67,11 +74,9 @@ void setup() {
     config.accessPoints = 1;
   }
   saveConfigFile(configFilename, config);
-
   configTstat();
-
   initWiFi();
-
+  ThingSpeak.begin(client);
   server.on("/", HTTP_GET, handleRoot);
   server.on("/heap", HTTP_GET, handleHeap);
   server.on("/fsinfo", HTTP_GET, handleFSInfo);
@@ -99,6 +104,20 @@ void loop() {
   }
   tstat.handleHeater();
   handleWiFi();
+  unsigned long currentMillis = millis();
+  if (currentMillis - writeChPreviousMillis >= writeChInterval) {
+    ThingSpeak.setField(1, tstat.getState());
+    ThingSpeak.setField(2, tempSensor.getCTemp());
+    ThingSpeak.setField(3, heater.isOn());
+    ThingSpeak.setField(4, lamp.isOn());
+    int status = ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
+    if (status == 200) {
+      Serial.println(F("Channel update successful."));
+      writeChPreviousMillis = currentMillis;
+    } else {
+      Serial.printf_P(PSTR("Problem updating channel. HTTP error code %d\r\n"), status);
+    }
+  }
   server.handleClient();
   Cron.delay();
   delay(1000);
