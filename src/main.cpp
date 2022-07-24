@@ -132,7 +132,7 @@ void handleRoot() {
   doc["nextTrg"] = Cron.getNextTrigger();
   doc["isLampOn"] = lamp.isOn();
   doc["cTemp"] = tempSensor.getCTemp();
-  doc["tstat"] = tstat.getStatus();
+  doc["tstatStats"] = tstat.getStatus();
   doc["isHeaterOn"] = heater.isOn();
   String json((char *)0);
   serializeJson(doc, json);
