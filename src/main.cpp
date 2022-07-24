@@ -9,11 +9,14 @@
 #include "builtinfiles.h"
 #include "relay.h"
 #include "temp_sensor.h"
+#include "tstat.h"
 
-Relay lamp(D6);
+Relay lamp(D5);
+Relay heater(D6);
 DSTempSensor tempSensor(D7);
+Tstat tstat(&tempSensor, &heater);
 
-const char *configFilename = "/config.json";
+const char *configFilename = "/.config.json";
 Config config;
 bool shouldReboot = false;
 
@@ -27,6 +30,7 @@ void handleNotFound();
 void handleRoot();
 void handleHeap();
 void handleFSInfo();
+void handleReboot();
 void handleConfigDetail();
 void handleConfigUpdate();
 void handleLampOn();
@@ -35,6 +39,7 @@ void handleLampOff();
 void setup() {
   Serial.begin(115200);
   lamp.setup();
+  heater.setup();
   tempSensor.setup();
 
   if (!LittleFS.begin()) {
@@ -54,11 +59,18 @@ void setup() {
   }
   saveConfigFile(configFilename, config);
 
+  tstat.setup(
+    config.tstat.setpoint,
+    config.tstat.hysteresis,
+    0,
+    29);
+
   initWiFi();
 
   server.on("/", HTTP_GET, handleRoot);
   server.on("/heap", HTTP_GET, handleHeap);
   server.on("/fsinfo", HTTP_GET, handleFSInfo);
+  server.on("/reboot", HTTP_GET, handleReboot);
   server.on("/config", HTTP_GET, handleConfigDetail);
   server.on("/config", HTTP_PUT, handleConfigUpdate);
   server.on("/lamp/on", HTTP_GET, handleLampOn);
@@ -80,6 +92,7 @@ void loop() {
     delay(100);
     ESP.restart();
   }
+  tstat.handleHeater();
   handleWiFi();
   server.handleClient();
   Cron.delay();
@@ -114,6 +127,8 @@ void handleRoot() {
   doc["nextTrg"] = Cron.getNextTrigger();
   doc["isLampOn"] = lamp.isOn();
   doc["cTemp"] = tempSensor.getCTemp();
+  doc["tstat"] = tstat.getStatus();
+  doc["isHeaterOn"] = heater.isOn();
   String json((char *)0);
   serializeJson(doc, json);
   server.send(200, "application/json", json.c_str(), measureJson(doc));
@@ -148,6 +163,12 @@ void handleFSInfo() {
   server.send(200, "text/plain", FPSTR(buf));
 }
 
+void handleReboot() {
+  if (!isAuthenticated()) return;
+  shouldReboot = true;
+  server.send(200);
+}
+
 void handleConfigDetail() {
   if (!isAuthenticated()) return;
   File file = LittleFS.open(configFilename, "r");
@@ -178,8 +199,8 @@ void handleConfigUpdate() {
     server.send(400, "text/plain", FPSTR(deserializeJSONError));
     return;
   }
-  config.thermostat.setpoint = doc["setpoint"];
-  config.thermostat.hysteresis = doc["hysteresis"];
+  config.tstat.setpoint = doc["setpoint"];
+  config.tstat.hysteresis = doc["hysteresis"];
   saveConfigFile(configFilename, config);
   redirect("/config");
 }
