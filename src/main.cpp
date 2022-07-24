@@ -63,7 +63,8 @@ void setup() {
     config.tstat.setpoint,
     config.tstat.hysteresis,
     0,
-    29);
+    29,
+    300000UL);
 
   initWiFi();
 

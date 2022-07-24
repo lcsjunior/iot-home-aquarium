@@ -43,6 +43,7 @@ void Tstat::handleHeater() {
   switch(_state) {
     case IDLE:
       _k->turnOff();
+      // Serial.println((currentMillis - exitIdlePreviousMillis) / 1000);
       if (currentMillis - exitIdlePreviousMillis >= _interval) {
         _state = COOLING;
       }
