@@ -110,12 +110,12 @@ void loop() {
     ThingSpeak.setField(2, tempSensor.getCTemp());
     ThingSpeak.setField(3, heater.isOn());
     ThingSpeak.setField(4, lamp.isOn());
-    int status = ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
-    if (status == 200) {
+    int statusCode = ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
+    if (statusCode == 200) {
       Serial.println(F("Channel update successful."));
       writeChPreviousMillis = currentMillis;
     } else {
-      Serial.printf_P(PSTR("Problem updating channel. HTTP error code %d\r\n"), status);
+      Serial.printf_P(PSTR("Problem updating channel. HTTP error code %d\r\n"), statusCode);
     }
   }
   server.handleClient();
