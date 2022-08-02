@@ -149,10 +149,10 @@ void handleRoot() {
   doc["time"] = now;
   doc["uptime"] = millis();
   doc["nextTrg"] = Cron.getNextTrigger();
-  doc["isLampOn"] = lamp.isOn();
+  doc["lampOn"] = lamp.isOn();
   doc["cTemp"] = tempSensor.getCTemp();
   doc["tstatStats"] = tstat.getStatus();
-  doc["isHeaterOn"] = heater.isOn();
+  doc["heaterOn"] = heater.isOn();
   String json((char *)0);
   serializeJson(doc, json);
   server.send(200, "application/json", json.c_str(), measureJson(doc));
