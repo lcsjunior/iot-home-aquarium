@@ -26,8 +26,8 @@ const char *www_user = BASIC_AUTH_USER;
 const char *www_pass = BASIC_AUTH_PASS;
 
 WiFiClient client;
-const unsigned long myChannelNumber = SECRET_CH_ID;
-const char *myWriteAPIKey = SECRET_WRITE_APIKEY;
+// const unsigned long myChannelNumber = SECRET_CH_ID;
+// const char *myWriteAPIKey = SECRET_WRITE_APIKEY;
 static const unsigned long writeChInterval = 15000;
 unsigned long writeChPreviousMillis = 0;
 
@@ -88,10 +88,10 @@ void setup() {
   server.onNotFound(handleNotFound);
   server.begin();
 
-  Cron.create("0 0 8 * * *", []() {
+  Cron.create(config.lamp.turnOn, []() {
     lamp.turnOn();
   }, false);
-  Cron.create("0 0 16 * * *", []() {
+  Cron.create(config.lamp.turnOff, []() {
     lamp.turnOff();
   }, false);
 }
@@ -110,7 +110,9 @@ void loop() {
     ThingSpeak.setField(2, tempSensor.getCTemp());
     ThingSpeak.setField(3, heater.isOn());
     ThingSpeak.setField(4, lamp.isOn());
-    int statusCode = ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
+    int statusCode = ThingSpeak.writeFields(
+      config.thingSpeak.chID,
+      config.thingSpeak.wkey);
     if (statusCode == 200) {
       Serial.println(F("Channel update successful."));
       writeChPreviousMillis = currentMillis;
@@ -206,10 +208,13 @@ void handleConfigDetail() {
     server.send(400, "text/plain", FPSTR(deserializeJSONError));
     return;
   }
-  JsonArray aps = doc["access_points"];
+  JsonArray aps = doc["accessPoints"];
   for (JsonObject ap : aps) {
     ap.remove("pass");
   }
+  JsonObject thingSpeak = doc["thingSpeak"];
+  thingSpeak.remove("rkey");
+  thingSpeak.remove("wkey");
   String json((char *)0);
   serializeJson(doc, json);
   server.send(200, "application/json", json.c_str(), measureJson(doc));
@@ -217,12 +222,17 @@ void handleConfigDetail() {
 
 void handleConfigUpdate() {
   if (!isAuthenticated()) return;
-  StaticJsonDocument<256> doc;
+  StaticJsonDocument<1024> doc;
   DeserializationError err = deserializeJson(doc, server.arg("plain"));
   if (err) {
     server.send(400, "text/plain", FPSTR(deserializeJSONError));
     return;
   }
+  config.thingSpeak.chID = doc["chID"];
+  strncpy(config.thingSpeak.rkey, doc["rkey"] | "", sizeof(config.thingSpeak.rkey));
+  strncpy(config.thingSpeak.wkey, doc["wkey"] | "", sizeof(config.thingSpeak.wkey));
+  strncpy(config.lamp.turnOn, doc["turnOnLamp"] | "", sizeof(config.lamp.turnOn));
+  strncpy(config.lamp.turnOff, doc["turnOffLamp"] | "", sizeof(config.lamp.turnOff));
   config.tstat.setpoint = doc["setpoint"];
   config.tstat.hysteresis = doc["hysteresis"];
   configTstat();

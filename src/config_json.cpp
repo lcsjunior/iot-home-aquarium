@@ -44,15 +44,16 @@ void printFile(const char *filename) {
 }
 
 void convertToJson(const Config &src, JsonVariant dst) {
-  dst["tstat"] = src.tstat;
-  JsonArray aps = dst.createNestedArray("access_points");
+  JsonArray aps = dst.createNestedArray("accessPoints");
   for (uint8_t i = 0; i < src.accessPoints; i++)
     aps.add(src.accessPoint[i]);
+  dst["thingSpeak"] = src.thingSpeak;
+  dst["lamp"] = src.lamp;
+  dst["tstat"] = src.tstat;
 }
 
 void convertFromJson(JsonVariantConst src, Config &dst) {
-  dst.tstat = src["tstat"];
-  JsonArrayConst aps = src["access_points"];
+  JsonArrayConst aps = src["accessPoints"];
   dst.accessPoints = 0;
   for (JsonVariantConst ap : aps) {
     dst.accessPoint[dst.accessPoints] = ap;
@@ -60,6 +61,9 @@ void convertFromJson(JsonVariantConst src, Config &dst) {
     if (dst.accessPoints >= Config::maxAccessPoints)
       break;
   }
+  dst.thingSpeak = src["thingSpeak"];
+  dst.lamp = src["lamp"];
+  dst.tstat = src["tstat"];
 }
 
 void convertToJson(const ApConfig &src, JsonVariant dst) {
@@ -70,6 +74,28 @@ void convertToJson(const ApConfig &src, JsonVariant dst) {
 void convertFromJson(JsonVariantConst src, ApConfig &dst) {
   strncpy(dst.ssid, src["ssid"] | "", sizeof(dst.ssid));
   strncpy(dst.pass, src["pass"] | "", sizeof(dst.pass));
+}
+
+void convertToJson(const ThingSpeakConfig &src, JsonVariant dst) {
+  dst["chID"] = src.chID;
+  dst["rkey"] = src.rkey;
+  dst["wkey"] = src.wkey;
+}
+
+void convertFromJson(JsonVariantConst src, ThingSpeakConfig &dst) {
+  dst.chID = src["chID"];
+  strncpy(dst.rkey, src["rkey"] | "", sizeof(dst.rkey));
+  strncpy(dst.wkey, src["wkey"] | "", sizeof(dst.wkey));
+}
+
+void convertToJson(const LampConfig &src, JsonVariant dst) {
+  dst["on"] = src.turnOn;
+  dst["off"] = src.turnOff;
+}
+
+void convertFromJson(JsonVariantConst src, LampConfig &dst) {
+  strncpy(dst.turnOn, src["turnOn"] | "", sizeof(dst.turnOn));
+  strncpy(dst.turnOff, src["turnOff"] | "", sizeof(dst.turnOff));
 }
 
 void convertToJson(const TstatConfig &src, JsonVariant dst) {
