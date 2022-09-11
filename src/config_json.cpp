@@ -89,8 +89,8 @@ void convertFromJson(JsonVariantConst src, ThingSpeakConfig &dst) {
 }
 
 void convertToJson(const LampConfig &src, JsonVariant dst) {
-  dst["on"] = src.turnOn;
-  dst["off"] = src.turnOff;
+  dst["turnOn"] = src.turnOn;
+  dst["turnOff"] = src.turnOff;
 }
 
 void convertFromJson(JsonVariantConst src, LampConfig &dst) {

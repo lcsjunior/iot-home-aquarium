@@ -8,8 +8,8 @@ struct ApConfig {
 
 struct ThingSpeakConfig {
   uint32_t chID;
-  char rkey[16];
-  char wkey[16];
+  char rkey[32];
+  char wkey[32];
 };
 
 struct LampConfig {
