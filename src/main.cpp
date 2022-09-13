@@ -102,8 +102,10 @@ void loop() {
     delay(100);
     ESP.restart();
   }
+  Cron.delay();
   tstat.handleHeater();
   handleWiFi();
+  server.handleClient();
   unsigned long currentMillis = millis();
   if (currentMillis - writeChPreviousMillis >= writeChInterval) {
     ThingSpeak.setField(1, tstat.getState());
@@ -120,8 +122,6 @@ void loop() {
       Serial.printf_P(PSTR("Problem updating channel. HTTP error code %d\r\n"), statusCode);
     }
   }
-  server.handleClient();
-  Cron.delay();
   delay(1000);
 }
 
