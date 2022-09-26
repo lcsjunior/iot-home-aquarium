@@ -139,7 +139,7 @@ void redirect(const char *url) {
 }
 
 void handleNotFound() {
-  server.send(404, "text/plain", FPSTR(notFoundText));
+  server.send(404, "text/plain", FPSTR(textNotFoundMessage));
 }
 
 void handleRoot() {
@@ -199,13 +199,13 @@ void handleConfigDetail() {
   if (!isAuthenticated()) return;
   File file = LittleFS.open(configFilename, "r");
   if (!file) {
-    server.send(400, "text/plain", FPSTR(openFileError));
+    server.send(400, "text/plain", FPSTR(openFileFailedMessage));
     return;
   }
   StaticJsonDocument<1024> doc;
   DeserializationError err = deserializeJson(doc, file);
   if (err) {
-    server.send(400, "text/plain", FPSTR(deserializeJSONError));
+    server.send(400, "text/plain", FPSTR(deserializeJSONFiledMessage));
     return;
   }
   JsonArray aps = doc["accessPoints"];
@@ -225,7 +225,7 @@ void handleConfigUpdate() {
   StaticJsonDocument<1024> doc;
   DeserializationError err = deserializeJson(doc, server.arg("plain"));
   if (err) {
-    server.send(400, "text/plain", FPSTR(deserializeJSONError));
+    server.send(400, "text/plain", FPSTR(deserializeJSONFiledMessage));
     return;
   }
   config.thingSpeak.chID = doc["chID"];
